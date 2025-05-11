@@ -51,11 +51,16 @@ export async function signIn(params: SignInParams) {
 		if (!userRecord) {
 			return {
 				success: false,
-				message: "User does not exists",
+				message: "User does not exist",
 			};
 		}
 
 		await setSessionCookie(idToken);
+
+		return {
+			success: true,
+			message: "Logged in",
+		};
 	} catch (e) {
 		console.log(e);
 		return {
