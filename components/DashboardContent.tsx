@@ -94,11 +94,13 @@ export default function DashboardContent({ role }: { role: UserRole }) {
 	if (!user) return null;
 
 	return (
-		<div className="w-full flex justify-center py-10">
-			<div className="w-[600px] max-w-full space-y-6 px-4">
+		<div className="w-full flex justify-center px-2 py-6 md:py-10">
+			<div className="w-full max-w-3xl space-y-6 px-4 md:px-6">
 				{/* Account Details */}
 				<div className="rounded-xl bg-[#0B1623] border border-gray-700 p-6 shadow text-white">
-					<h2 className="text-2xl font-bold mb-4">Account Details</h2>
+					<h2 className="text-xl md:text-2xl font-bold mb-4">
+						Account Details
+					</h2>
 					<p>
 						<span className="text-gray-400">Full Name:</span>{" "}
 						{user.name}
@@ -117,7 +119,7 @@ export default function DashboardContent({ role }: { role: UserRole }) {
 					<>
 						{/* 🧍‍♂️ Patient: My Care Providers */}
 						<div className="rounded-xl bg-[#0B1623] border border-gray-700 p-6 shadow text-white">
-							<h2 className="text-2xl font-bold mb-4">
+							<h2 className="text-xl md:text-2xl font-bold mb-4">
 								My Care Providers
 							</h2>
 							<MyCareProviders patientEmail={user.email} />
@@ -126,7 +128,7 @@ export default function DashboardContent({ role }: { role: UserRole }) {
 						{/* ⏳ Patient: Pending Requests — coming next */}
 
 						<div className="rounded-xl bg-[#0B1623] border border-gray-700 p-6 shadow text-white">
-							<h2 className="text-2xl font-bold mb-4">
+							<h2 className="text-xl md:text-2xl font-bold mb-4">
 								Pending Requests
 							</h2>
 							<PendingRequests patientEmail={user.email} />
@@ -138,7 +140,7 @@ export default function DashboardContent({ role }: { role: UserRole }) {
 					<>
 						{/* My Current Patients */}
 						<div className="rounded-xl bg-[#0B1623] border border-gray-700 p-6 shadow text-white">
-							<h2 className="text-2xl font-bold mb-4">
+							<h2 className="text-xl md:text-2xl font-bold mb-4">
 								My Current Patients
 							</h2>
 							<MyPatients providerEmail={user.email} />
@@ -146,7 +148,7 @@ export default function DashboardContent({ role }: { role: UserRole }) {
 
 						{/* Search for Patients */}
 						<div className="rounded-xl bg-[#0B1623] border border-gray-700 p-6 shadow text-white">
-							<h2 className="text-2xl font-bold mb-4">
+							<h2 className="text-xl md:text-2xl font-bold mb-4">
 								Search for Patients
 							</h2>
 							<UserSearch
