@@ -1,6 +1,5 @@
 import AccountButton from "@/components/AccountButton";
 import SignOutButton from "@/components/SignOutButton";
-import { Button } from "@/components/ui/button";
 import { isAuthenticated } from "@/lib/actions/auth.action";
 import Image from "next/image";
 import Link from "next/link";
