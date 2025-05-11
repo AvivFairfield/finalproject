@@ -9,7 +9,7 @@ const Page = async () => {
 		redirect("/settings");
 	}
 
-	return <HomeClient user={user} />;
+	return <HomeClient user={user!} />;
 };
 
 export default Page;
