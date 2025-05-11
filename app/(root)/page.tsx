@@ -9,7 +9,11 @@ const Page = async () => {
 		redirect("/settings");
 	}
 
-	return <HomeClient user={user!} />;
+	return (
+		<div className="w-full max-w-7xl mx-auto px-4">
+			<HomeClient user={user!} />
+		</div>
+	);
 };
 
 export default Page;
