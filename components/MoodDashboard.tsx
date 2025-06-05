@@ -1,0 +1,141 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import {
+	MoodData,
+	parseCsvData,
+	filterDataByTimeRange,
+	getDateRangeDescription,
+} from "../lib/csvParser";
+import MoodChart from "./MoodChart";
+import TimeRangeSelector from "./TimeRangeSelector";
+import FeelingSelector from "./FeelingSelector";
+import AverageCards from "./AverageCards";
+
+const MoodDashboard: React.FC = () => {
+	const [data, setData] = useState<MoodData[]>([]);
+	const [filteredData, setFilteredData] = useState<MoodData[]>([]);
+	const [selectedRange, setSelectedRange] = useState("lastWeek");
+	const [selectedFeelings, setSelectedFeelings] = useState<string[]>([
+		"My Mood",
+		"Parkinson's State",
+		"Physical Difficulty",
+	]);
+	const [loading, setLoading] = useState(true);
+	const [startDate, setStartDate] = useState<Date | undefined>();
+	const [endDate, setEndDate] = useState<Date | undefined>();
+
+	useEffect(() => {
+		const loadData = async () => {
+			try {
+				const response = await fetch("/mood-data.csv");
+				const csvText = await response.text();
+				const parsedData = parseCsvData(csvText);
+				setData(parsedData);
+				setLoading(false);
+			} catch (error) {
+				console.error("Error loading CSV data:", error);
+				setLoading(false);
+			}
+		};
+
+		loadData();
+	}, []);
+
+	useEffect(() => {
+		if (data.length > 0) {
+			if (selectedRange === "customRange" && (!startDate || !endDate)) {
+				setFilteredData([]);
+				return;
+			}
+
+			const filtered = filterDataByTimeRange(
+				data,
+				selectedRange,
+				startDate,
+				endDate
+			);
+			const feelingFiltered = filtered.filter((item) =>
+				selectedFeelings.includes(item.type)
+			);
+			setFilteredData(feelingFiltered);
+		}
+	}, [data, selectedRange, selectedFeelings, startDate, endDate]);
+
+	const handleRangeChange = (range: string) => {
+		setSelectedRange(range);
+		if (range !== "customRange") {
+			setStartDate(undefined);
+			setEndDate(undefined);
+		}
+	};
+
+	const handleFeelingToggle = (feeling: string) => {
+		setSelectedFeelings((prev) => {
+			if (prev.includes(feeling)) {
+				return prev.filter((f) => f !== feeling);
+			} else {
+				return [...prev, feeling];
+			}
+		});
+	};
+
+	const dateRangeInfo =
+		data.length > 0
+			? getDateRangeDescription(selectedRange, data, startDate, endDate)
+			: "";
+
+	if (loading) {
+		return (
+			<div className="min-h-screen bg-[#0B1623] flex items-center justify-center">
+				<div className="text-center">
+					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+					<p className="text-gray-300">
+						Loading your health insights...
+					</p>
+				</div>
+			</div>
+		);
+	}
+
+	return (
+		<div className="min-h-screen  p-4 md:p-8 text-white">
+			<div className="max-w-7xl mx-auto">
+				<div className="text-center mb-8">
+					<h1 className="text-4xl font-bold mb-2">
+						Health & Mood Insights
+					</h1>
+					<p className="text-md text-gray-400">
+						Track your wellbeing patterns over time
+					</p>
+				</div>
+
+				<div className="bg-muted rounded-2xl p-6 md:p-8 shadow-lg mb-6 ">
+					<FeelingSelector
+						selectedFeelings={selectedFeelings}
+						onFeelingToggle={handleFeelingToggle}
+					/>
+
+					<TimeRangeSelector
+						selectedRange={selectedRange}
+						onRangeChange={handleRangeChange}
+						startDate={startDate}
+						endDate={endDate}
+						onStartDateChange={setStartDate}
+						onEndDateChange={setEndDate}
+						dateRangeInfo={dateRangeInfo}
+					/>
+
+					<MoodChart data={filteredData} timeRange={selectedRange} />
+
+					<AverageCards
+						data={filteredData}
+						selectedFeelings={selectedFeelings}
+					/>
+				</div>
+			</div>
+		</div>
+	);
+};
+
+export default MoodDashboard;
