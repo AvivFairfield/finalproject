@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -13,6 +12,7 @@ import {
 } from "recharts";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
+import DateRangeSelector from "@/components/DateRangeSelector";
 
 interface MedicineEntry {
 	name: string;
@@ -20,11 +20,13 @@ interface MedicineEntry {
 	dateTaken: string;
 }
 
-type View = "today" | "lastWeek" | "lastMonth";
+type View = "today" | "lastWeek" | "lastMonth" | "custom";
 
 const MedicineStackedChart: React.FC = () => {
 	const [data, setData] = useState<MedicineEntry[]>([]);
 	const [view, setView] = useState<View>("lastWeek");
+	const [customStart, setCustomStart] = useState<Date | undefined>();
+	const [customEnd, setCustomEnd] = useState<Date | undefined>();
 
 	useEffect(() => {
 		fetch("/fabricated_medicines_mar_jun_utf8bom.csv")
@@ -34,9 +36,10 @@ const MedicineStackedChart: React.FC = () => {
 				const headers = lines[0].split(",");
 				const entries = lines.slice(1).map((line) => {
 					const values = line.split(",");
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					const entry: any = {};
 					headers.forEach((h, i) => {
-						entry[h.trim()] = values[i].trim();
+						entry[h.trim()] = values[i]?.trim();
 					});
 					return {
 						name: entry.name,
@@ -50,14 +53,18 @@ const MedicineStackedChart: React.FC = () => {
 
 	const filteredData = useMemo(() => {
 		const now = new Date();
-
 		const rangeStart = new Date(now);
+
 		if (view === "today") {
 			rangeStart.setHours(0, 0, 0, 0);
 		} else if (view === "lastWeek") {
 			rangeStart.setDate(now.getDate() - 7);
 		} else if (view === "lastMonth") {
 			rangeStart.setDate(now.getDate() - 30);
+		} else if (view === "custom") {
+			if (!customStart || !customEnd) return [];
+			rangeStart.setTime(customStart.getTime());
+			now.setTime(customEnd.getTime());
 		}
 
 		const byDateAndMedicine: Record<string, Record<string, number>> = {};
@@ -67,7 +74,7 @@ const MedicineStackedChart: React.FC = () => {
 			if (isNaN(parsed.getTime())) return;
 
 			if (parsed >= rangeStart && parsed <= now) {
-				const dateKey = format(parsed, "MMM d");
+				const dateKey = format(parsed, "dd/M"); // <-- Changed format here
 				if (!byDateAndMedicine[dateKey]) {
 					byDateAndMedicine[dateKey] = {};
 				}
@@ -82,7 +89,7 @@ const MedicineStackedChart: React.FC = () => {
 			date,
 			...meds,
 		}));
-	}, [data, view]);
+	}, [data, view, customStart, customEnd]);
 
 	const allMedicineNames = useMemo(() => {
 		const names = new Set<string>();
@@ -90,9 +97,39 @@ const MedicineStackedChart: React.FC = () => {
 		return Array.from(names);
 	}, [data]);
 
+	const getDateRangeLabel = () => {
+		const now = new Date();
+		let from: Date = new Date(now);
+		let to: Date = now;
+
+		if (view === "today") {
+			from = new Date(now);
+			from.setHours(0, 0, 0, 0);
+			return `Showing data from ${format(from, "HH:mm")} to ${format(
+				to,
+				"HH:mm"
+			)}`;
+		} else if (view === "lastWeek") {
+			from = new Date(now);
+			from.setDate(now.getDate() - 7);
+		} else if (view === "lastMonth") {
+			from = new Date(now);
+			from.setDate(now.getDate() - 30);
+		} else if (view === "custom") {
+			if (!customStart || !customEnd) return "Please select a date range";
+			from = customStart;
+			to = customEnd;
+		}
+
+		return `Showing data from ${format(from, "MMM d")} to ${format(
+			to,
+			"MMM d"
+		)}`;
+	};
+
 	return (
 		<div className="w-full max-w-7xl mx-auto px-4">
-			<div className="flex gap-2 my-4">
+			<div className="flex flex-wrap items-center gap-2 my-4">
 				<Button
 					variant={view === "today" ? "default" : "outline"}
 					onClick={() => setView("today")}
@@ -111,6 +148,24 @@ const MedicineStackedChart: React.FC = () => {
 				>
 					Last Month
 				</Button>
+				<Button
+					variant={view === "custom" ? "default" : "outline"}
+					onClick={() => setView("custom")}
+				>
+					Custom Range
+				</Button>
+
+				{view === "custom" && (
+					<DateRangeSelector
+						startDate={customStart}
+						endDate={customEnd}
+						onStartDateChange={setCustomStart}
+						onEndDateChange={setCustomEnd}
+					/>
+				)}
+			</div>
+			<div className="text-sm text-muted-foreground font-medium mb-2">
+				{getDateRangeLabel()}
 			</div>
 
 			<div className="bg-muted rounded-lg p-4">

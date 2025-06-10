@@ -11,6 +11,7 @@ import {
 	TooltipProps,
 } from "recharts";
 import { format } from "date-fns"; // ✅ Make sure you have this!
+import DateRangeSelector from "@/components/DateRangeSelector"; // adjust the path as needed
 
 // ✅ Correct TypeScript interfaces
 interface NutritionEntry {
@@ -42,6 +43,8 @@ export default function NutritionPieTimeline() {
 	const [data, setData] = useState<ExtendedNutrientGroup[][]>([]);
 	const [labels, setLabels] = useState<string[]>([]);
 	const [viewMode, setViewMode] = useState<ViewMode>("day");
+	const [customStartDate, setCustomStartDate] = useState<Date | undefined>();
+	const [customEndDate, setCustomEndDate] = useState<Date | undefined>();
 
 	useEffect(() => {
 		fetch("/nutritions2.csv")
@@ -73,12 +76,10 @@ export default function NutritionPieTimeline() {
 							startDate = new Date(now);
 							startDate.setDate(now.getDate() - 29);
 							startDate.setHours(0, 0, 0, 0);
-						} else {
-							startDate = entries.reduce((earliest, current) =>
-								earliest.dateObj! < current.dateObj!
-									? earliest
-									: current
-							).dateObj!;
+						} else if (viewMode === "custom") {
+							if (!customStartDate || !customEndDate) return;
+							startDate = customStartDate;
+							endDate.setTime(customEndDate.getTime());
 						}
 
 						const filteredEntries = entries.filter((entry) => {
@@ -98,7 +99,7 @@ export default function NutritionPieTimeline() {
 					},
 				});
 			});
-	}, [viewMode]);
+	}, [viewMode, customStartDate, customEndDate]);
 
 	const groupByView = (
 		entries: NutritionEntry[],
@@ -224,9 +225,25 @@ export default function NutritionPieTimeline() {
 			{labels.length > 1 && (
 				<>
 					<p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-						Showing data from <strong>{labels[0]}</strong> to{" "}
-						<strong>{labels[labels.length - 1]}</strong>
+						{viewMode === "custom" &&
+						customStartDate &&
+						customEndDate ? (
+							<>
+								Showing data from{" "}
+								<strong>
+									{format(customStartDate, "PPP")}
+								</strong>{" "}
+								to{" "}
+								<strong>{format(customEndDate, "PPP")}</strong>
+							</>
+						) : labels.length > 1 ? (
+							<>
+								Showing data from <strong>{labels[0]}</strong>{" "}
+								to <strong>{labels[labels.length - 1]}</strong>
+							</>
+						) : null}
 					</p>
+
 					{(() => {
 						const total = data.flat().reduce((acc, cur) => {
 							acc[cur.name] = (acc[cur.name] || 0) + cur.value;
@@ -246,23 +263,34 @@ export default function NutritionPieTimeline() {
 
 			{/* Buttons */}
 			<div className="flex flex-wrap items-center gap-3 mb-4">
-				{(["day", "week", "month"] as ViewMode[]).map((mode) => (
-					<button
-						key={mode}
-						className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ease-in-out transform ${
-							viewMode === mode
-								? "bg-indigo-500 text-white shadow-md scale-105"
-								: "bg-muted text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-700 scale-100"
-						}`}
-						onClick={() => setViewMode(mode)}
-					>
-						{mode === "custom"
-							? "Custom"
-							: `Last ${
-									mode.charAt(0).toUpperCase() + mode.slice(1)
-							  }`}
-					</button>
-				))}
+				{(["day", "week", "month", "custom"] as ViewMode[]).map(
+					(mode) => (
+						<button
+							key={mode}
+							className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ease-in-out transform ${
+								viewMode === mode
+									? "bg-indigo-500 text-white shadow-md scale-105"
+									: "bg-muted text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-700 scale-100"
+							}`}
+							onClick={() => setViewMode(mode)}
+						>
+							{mode === "custom"
+								? "Custom"
+								: `Last ${
+										mode.charAt(0).toUpperCase() +
+										mode.slice(1)
+								  }`}
+						</button>
+					)
+				)}
+				{viewMode === "custom" && (
+					<DateRangeSelector
+						startDate={customStartDate}
+						endDate={customEndDate}
+						onStartDateChange={setCustomStartDate}
+						onEndDateChange={setCustomEndDate}
+					/>
+				)}
 			</div>
 
 			{/* Legend */}
