@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import DateRangeSelector from "@/components/DateRangeSelector";
 import HowToReadDashboard from "./HowToReadDashboard";
+import CustomTooltip from "./CustomTooltip";
 
 interface MedicineEntry {
 	name: string;
@@ -130,54 +131,56 @@ const MedicineStackedChart: React.FC = () => {
 
 	return (
 		<div className="w-full max-w-7xl mx-auto px-4">
-			<div className="flex flex-wrap items-center gap-2 my-4">
-				<Button
-					variant={view === "today" ? "default" : "outline"}
-					onClick={() => setView("today")}
-				>
-					Today
-				</Button>
-				<Button
-					variant={view === "lastWeek" ? "default" : "outline"}
-					onClick={() => setView("lastWeek")}
-				>
-					Last Week
-				</Button>
-				<Button
-					variant={view === "lastMonth" ? "default" : "outline"}
-					onClick={() => setView("lastMonth")}
-				>
-					Last Month
-				</Button>
-				<Button
-					variant={view === "custom" ? "default" : "outline"}
-					onClick={() => setView("custom")}
-				>
-					Custom Range
-				</Button>
-
-				{view === "custom" && (
-					<DateRangeSelector
-						startDate={customStart}
-						endDate={customEnd}
-						onStartDateChange={setCustomStart}
-						onEndDateChange={setCustomEnd}
-					/>
-				)}
-			</div>
-			<div className="text-sm text-muted-foreground font-medium mb-2">
-				{getDateRangeLabel()}
-			</div>
-
-			<div className="bg-muted rounded-lg p-4">
+			<div className="bg-muted rounded-lg p-4 shadow-md">
 				<h2 className="text-xl font-semibold text-white mb-4">
 					Medicine Intake Summary
 				</h2>
+
+				<div className="flex flex-wrap items-center gap-2 mb-4">
+					<Button
+						variant={view === "today" ? "default" : "outline"}
+						onClick={() => setView("today")}
+					>
+						Today
+					</Button>
+					<Button
+						variant={view === "lastWeek" ? "default" : "outline"}
+						onClick={() => setView("lastWeek")}
+					>
+						Last Week
+					</Button>
+					<Button
+						variant={view === "lastMonth" ? "default" : "outline"}
+						onClick={() => setView("lastMonth")}
+					>
+						Last Month
+					</Button>
+					<Button
+						variant={view === "custom" ? "default" : "outline"}
+						onClick={() => setView("custom")}
+					>
+						Custom Range
+					</Button>
+
+					{view === "custom" && (
+						<DateRangeSelector
+							startDate={customStart}
+							endDate={customEnd}
+							onStartDateChange={setCustomStart}
+							onEndDateChange={setCustomEnd}
+						/>
+					)}
+				</div>
+
+				<div className="text-sm text-muted-foreground font-medium mb-4">
+					{getDateRangeLabel()}
+				</div>
+
 				<ResponsiveContainer width="100%" height={400}>
 					<BarChart data={filteredData}>
 						<XAxis dataKey="date" stroke="#8884d8" />
 						<YAxis />
-						<Tooltip />
+						<Tooltip content={<CustomTooltip />} />
 						<Legend />
 						{allMedicineNames.map((name, idx) => (
 							<Bar
@@ -189,6 +192,7 @@ const MedicineStackedChart: React.FC = () => {
 						))}
 					</BarChart>
 				</ResponsiveContainer>
+
 				<HowToReadDashboard
 					title="How to Read This Graph"
 					bullets={[

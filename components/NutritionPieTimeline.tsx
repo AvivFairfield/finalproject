@@ -219,113 +219,113 @@ export default function NutritionPieTimeline() {
 
 	return (
 		<div className="p-4">
-			<h2 className="text-lg font-semibold mb-1">
-				Macronutrient Timeline (
-				{viewMode === "day" ? "by Hour" : "by Date"})
-			</h2>
-			{labels.length > 1 && (
-				<>
-					<p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-						{viewMode === "custom" &&
-						customStartDate &&
-						customEndDate ? (
-							<>
-								Showing data from{" "}
-								<strong>
-									{format(customStartDate, "PPP")}
-								</strong>{" "}
-								to{" "}
-								<strong>{format(customEndDate, "PPP")}</strong>
-							</>
-						) : labels.length > 1 ? (
-							<>
-								Showing data from <strong>{labels[0]}</strong>{" "}
-								to <strong>{labels[labels.length - 1]}</strong>
-							</>
-						) : null}
-					</p>
-
-					{(() => {
-						const total = data.flat().reduce((acc, cur) => {
-							acc[cur.name] = (acc[cur.name] || 0) + cur.value;
-							return acc;
-						}, {} as Record<string, number>);
-						return (
-							<p className="text-sm text-muted-foreground mb-4">
-								Total in view — Protein:{" "}
-								{total.Protein?.toFixed(1) || 0}g, Fat:{" "}
-								{total.Fat?.toFixed(1) || 0}g, Carbs:{" "}
-								{total.Carbs?.toFixed(1) || 0}g.
-							</p>
-						);
-					})()}
-				</>
-			)}
-
-			{/* Buttons */}
-			<div className="flex flex-wrap items-center gap-3 mb-4">
-				{(["day", "week", "month", "custom"] as ViewMode[]).map(
-					(mode) => (
-						<button
-							key={mode}
-							className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ease-in-out transform ${
-								viewMode === mode
-									? "bg-indigo-500 text-white shadow-md scale-105"
-									: "bg-muted text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-700 scale-100"
-							}`}
-							onClick={() => setViewMode(mode)}
-						>
-							{mode === "custom"
-								? "Custom"
-								: `Last ${
-										mode.charAt(0).toUpperCase() +
-										mode.slice(1)
-								  }`}
-						</button>
-					)
-				)}
-				{viewMode === "custom" && (
-					<DateRangeSelector
-						startDate={customStartDate}
-						endDate={customEndDate}
-						onStartDateChange={setCustomStartDate}
-						onEndDateChange={setCustomEndDate}
-					/>
-				)}
-			</div>
-
-			{/* Legend */}
-			<div className="flex items-center gap-4 mb-4 text-sm text-gray-300">
-				<div className="flex items-center gap-1">
-					<div
-						className="w-3 h-3 rounded-full"
-						style={{ backgroundColor: "#ff6384" }}
-					></div>
-					Protein
-				</div>
-				<div className="flex items-center gap-1">
-					<div
-						className="w-3 h-3 rounded-full"
-						style={{ backgroundColor: "#36a2eb" }}
-					></div>
-					Fat
-				</div>
-				<div className="flex items-center gap-1">
-					<div
-						className="w-3 h-3 rounded-full"
-						style={{ backgroundColor: "#ffcd56" }}
-					></div>
-					Carbs
-				</div>
-			</div>
-
-			{/* Grid */}
 			<div className="bg-muted rounded-lg p-4 shadow-md">
-				<h2 className="text-xl font-semibold text-white mb-4">
+				<h2 className="text-lg font-semibold mb-1 text-white">
 					Macronutrient Timeline (
 					{viewMode === "day" ? "by Hour" : "by Date"})
 				</h2>
 
+				{labels.length > 1 && (
+					<>
+						<p className="text-sm text-gray-300 mb-2">
+							{viewMode === "custom" &&
+							customStartDate &&
+							customEndDate ? (
+								<>
+									Showing data from{" "}
+									<strong>
+										{format(customStartDate, "PPP")}
+									</strong>{" "}
+									to{" "}
+									<strong>
+										{format(customEndDate, "PPP")}
+									</strong>
+								</>
+							) : (
+								<>
+									Showing data from{" "}
+									<strong>{labels[0]}</strong> to{" "}
+									<strong>{labels[labels.length - 1]}</strong>
+								</>
+							)}
+						</p>
+
+						{(() => {
+							const total = data.flat().reduce((acc, cur) => {
+								acc[cur.name] =
+									(acc[cur.name] || 0) + cur.value;
+								return acc;
+							}, {} as Record<string, number>);
+							return (
+								<p className="text-sm text-muted-foreground mb-4">
+									Total in view — Protein:{" "}
+									{total.Protein?.toFixed(1) || 0}g, Fat:{" "}
+									{total.Fat?.toFixed(1) || 0}g, Carbs:{" "}
+									{total.Carbs?.toFixed(1) || 0}g.
+								</p>
+							);
+						})()}
+					</>
+				)}
+
+				{/* Buttons */}
+				<div className="flex flex-wrap items-center gap-3 mb-4">
+					{(["day", "week", "month", "custom"] as ViewMode[]).map(
+						(mode) => (
+							<button
+								key={mode}
+								className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ease-in-out transform ${
+									viewMode === mode
+										? "bg-indigo-500 text-white shadow-md scale-105"
+										: "bg-muted text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-700 scale-100"
+								}`}
+								onClick={() => setViewMode(mode)}
+							>
+								{mode === "custom"
+									? "Custom"
+									: `Last ${
+											mode.charAt(0).toUpperCase() +
+											mode.slice(1)
+									  }`}
+							</button>
+						)
+					)}
+					{viewMode === "custom" && (
+						<DateRangeSelector
+							startDate={customStartDate}
+							endDate={customEndDate}
+							onStartDateChange={setCustomStartDate}
+							onEndDateChange={setCustomEndDate}
+						/>
+					)}
+				</div>
+
+				{/* Legend */}
+				<div className="flex items-center gap-4 mb-4 text-sm text-gray-300">
+					<div className="flex items-center gap-1">
+						<div
+							className="w-3 h-3 rounded-full"
+							style={{ backgroundColor: "#ff6384" }}
+						></div>
+						Protein
+					</div>
+					<div className="flex items-center gap-1">
+						<div
+							className="w-3 h-3 rounded-full"
+							style={{ backgroundColor: "#36a2eb" }}
+						></div>
+						Fat
+					</div>
+					<div className="flex items-center gap-1">
+						<div
+							className="w-3 h-3 rounded-full"
+							style={{ backgroundColor: "#ffcd56" }}
+						></div>
+						Carbs
+					</div>
+				</div>
+
+				{/* Grid */}
 				<div
 					className={
 						isDayView
@@ -362,6 +362,7 @@ export default function NutritionPieTimeline() {
 						</div>
 					))}
 				</div>
+
 				<HowToReadDashboard
 					title="How to Read This Graph"
 					bullets={[

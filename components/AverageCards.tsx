@@ -5,11 +5,13 @@ import { MoodData, calculateAverage } from "../lib/csvParser";
 interface AverageCardsProps {
 	data: MoodData[];
 	selectedFeelings: string[];
+	compact?: boolean;
 }
 
 const AverageCards: React.FC<AverageCardsProps> = ({
 	data,
 	selectedFeelings,
+	compact,
 }) => {
 	const feelings = [
 		{
@@ -34,10 +36,7 @@ const AverageCards: React.FC<AverageCardsProps> = ({
 
 	return (
 		<div className="mt-8">
-			<h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">
-				Average Score For Each Feeling:
-			</h3>
-			<div className="flex flex-wrap justify-center gap-4">
+			<div className="flex flex-wrap justify-end gap-4">
 				{feelings
 					.filter((feeling) => selectedFeelings.includes(feeling.key))
 					.map((feeling) => {
@@ -45,16 +44,38 @@ const AverageCards: React.FC<AverageCardsProps> = ({
 						return (
 							<Card
 								key={feeling.key}
-								className={`${feeling.color} border-2 min-w-[200px] shadow-sm hover:shadow-md transition-shadow duration-200`}
+								className={`${
+									feeling.color
+								} border min-w-[120px] ${
+									compact ? "text-xs px-2 py-2" : "text-base"
+								} shadow-sm hover:shadow-md transition-shadow duration-200`}
 							>
-								<CardContent className="p-4 text-center">
-									<div className="text-2xl mb-2">
+								<CardContent
+									className={`text-center ${
+										compact ? "p-2" : "p-4"
+									}`}
+								>
+									<div
+										className={`mb-1 ${
+											compact ? "text-base" : "text-2xl"
+										}`}
+									>
 										{feeling.icon}
 									</div>
-									<div className="text-sm font-medium text-gray-600 mb-1">
+									<div
+										className={`${
+											compact
+												? "text-xs mb-0.5"
+												: "text-sm mb-1"
+										} font-medium text-gray-600`}
+									>
 										{feeling.label}
 									</div>
-									<div className="text-2xl font-bold text-gray-800">
+									<div
+										className={`font-bold text-gray-800 ${
+											compact ? "text-lg" : "text-2xl"
+										}`}
+									>
 										{average.toFixed(1)}
 									</div>
 								</CardContent>

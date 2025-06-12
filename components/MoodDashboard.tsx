@@ -112,27 +112,36 @@ const MoodDashboard: React.FC = () => {
 				</div>
 
 				<div className="bg-muted rounded-2xl p-6 md:p-8 shadow-lg mb-6 ">
-					<FeelingSelector
-						selectedFeelings={selectedFeelings}
-						onFeelingToggle={handleFeelingToggle}
-					/>
+					<div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+						{/* Left: Date controls */}
+						<div className="flex-1 min-w-[200px]">
+							<FeelingSelector
+								selectedFeelings={selectedFeelings}
+								onFeelingToggle={handleFeelingToggle}
+							/>
+							<TimeRangeSelector
+								selectedRange={selectedRange}
+								onRangeChange={handleRangeChange}
+								startDate={startDate}
+								endDate={endDate}
+								onStartDateChange={setStartDate}
+								onEndDateChange={setEndDate}
+								dateRangeInfo={dateRangeInfo}
+							/>
+						</div>
 
-					<TimeRangeSelector
-						selectedRange={selectedRange}
-						onRangeChange={handleRangeChange}
-						startDate={startDate}
-						endDate={endDate}
-						onStartDateChange={setStartDate}
-						onEndDateChange={setEndDate}
-						dateRangeInfo={dateRangeInfo}
-					/>
+						{/* Right: Compact average cards */}
+						<div className="flex flex-row gap-3 md:gap-4 md:items-start pr-2">
+							<AverageCards
+								data={filteredData}
+								selectedFeelings={selectedFeelings}
+								compact
+							/>
+						</div>
+					</div>
 
 					<MoodChart data={filteredData} timeRange={selectedRange} />
 
-					<AverageCards
-						data={filteredData}
-						selectedFeelings={selectedFeelings}
-					/>
 					<HowToReadDashboard
 						title="How to Read This Graph"
 						bullets={[

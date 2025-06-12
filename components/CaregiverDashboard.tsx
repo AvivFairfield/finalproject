@@ -38,7 +38,8 @@ const CaregiverDashboard: React.FC<Props> = ({ user }) => {
 		<div className="w-full max-w-7xl mx-auto px-4">
 			<HomeClient user={user} />
 
-			<div className="flex gap-4 my-6">
+			<MoodDashboard />
+			<div className="flex gap-4 my-6 justify-center">
 				{(
 					[
 						"nutritionist",
@@ -59,8 +60,6 @@ const CaregiverDashboard: React.FC<Props> = ({ user }) => {
 					</button>
 				))}
 			</div>
-
-			<MoodDashboard />
 
 			{activeTab === "nutritionist" && (
 				<>

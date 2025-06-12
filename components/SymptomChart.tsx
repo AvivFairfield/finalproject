@@ -775,56 +775,44 @@ const SymptomChart = () => {
 								))}
 							</div>
 						</div>
-						<HowToReadDashboard
-							title="How to Read This Graph"
-							bullets={[
-								"The horizontal axis represents the time or date when symptoms were reported.",
-								"The vertical axis lists the different symptom types, each with a unique icon and color.",
-								"A colored rectangle indicates that a symptom occurred at that time.",
-								"The shade (transparency) reflects severity: 1 (lightest) to 5 (darkest).",
-								"Hover over a rectangle to see symptom type, severity, date, time, and notes (if provided).",
-								"Use the buttons at the top to switch between Last Day, Last Week, Last Month, or a Custom Range.",
-								"This chart helps track symptom frequency and intensity, supporting better care planning.",
-							]}
-							legend={[
-								{
-									label: "Dystonia",
-									color: "#EC4899",
-									opacity: 1,
-								},
-								{
-									label: "Speech Difficulty",
-									color: "#449455",
-									opacity: 1,
-								},
-								{
-									label: "Dyskinesia",
-									color: "#3B82F6",
-									opacity: 1,
-								},
-								{
-									label: "Tremor",
-									color: "#9c9135",
-									opacity: 1,
-								},
-								{
-									label: "Hyperactivity",
-									color: "#EF4444",
-									opacity: 1,
-								},
-								{
-									label: "Stool",
-									color: "#75359c",
-									opacity: 1,
-								},
-								{
-									label: "Other Symptoms",
-									color: "#F97316",
-									opacity: 1,
-								},
-							]}
-						/>
 					</div>
+					<HowToReadDashboard
+						title="How to Read This Graph"
+						bullets={[
+							"The horizontal axis represents the time or date when symptoms were reported.",
+							"The vertical axis lists the different symptom types, each with a unique icon and color.",
+							"A colored rectangle indicates that a symptom occurred at that time.",
+							"The shade (transparency) reflects severity: 1 (lightest) to 5 (darkest).",
+							"Hover over a rectangle to see symptom type, severity, date, time, and notes (if provided).",
+							"Use the buttons at the top to switch between Last Day, Last Week, Last Month, or a Custom Range.",
+							"This chart helps track symptom frequency and intensity, supporting better care planning.",
+						]}
+						legend={[
+							{ label: "Dystonia", color: "#EC4899", opacity: 1 },
+							{
+								label: "Speech Difficulty",
+								color: "#449455",
+								opacity: 1,
+							},
+							{
+								label: "Dyskinesia",
+								color: "#3B82F6",
+								opacity: 1,
+							},
+							{ label: "Tremor", color: "#9c9135", opacity: 1 },
+							{
+								label: "Hyperactivity",
+								color: "#EF4444",
+								opacity: 1,
+							},
+							{ label: "Stool", color: "#75359c", opacity: 1 },
+							{
+								label: "Other Symptoms",
+								color: "#F97316",
+								opacity: 1,
+							},
+						]}
+					/>
 				</div>
 			</div>
 		</div>
