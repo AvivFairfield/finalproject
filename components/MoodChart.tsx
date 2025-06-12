@@ -72,7 +72,7 @@ const MoodChart: React.FC<MoodChartProps> = ({ data, timeRange }) => {
 		data.forEach((item) => {
 			let timeKey: string;
 
-			if (timeRange === "lastDay") {
+			if (timeRange === "today") {
 				// For last day, show hours with minutes for more precision
 				const date = new Date(item.ISO_DateTime);
 				const hour = date.getHours();
@@ -96,7 +96,7 @@ const MoodChart: React.FC<MoodChartProps> = ({ data, timeRange }) => {
 		// Convert to chart format and sort by time
 		const chartData: ChartData[] = Object.keys(groupedData)
 			.sort((a, b) => {
-				if (timeRange === "lastDay") {
+				if (timeRange === "today") {
 					// Sort by time for last day view
 					const [aHour, aMin] = a.split(":").map(Number);
 					const [bHour, bMin] = b.split(":").map(Number);

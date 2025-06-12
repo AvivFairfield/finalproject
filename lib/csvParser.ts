@@ -59,62 +59,63 @@ export const filterDataByTimeRange = (
 	startDate?: Date,
 	endDate?: Date
 ): MoodData[] => {
-	if (range === "customRange") {
+	if (range === "custom") {
 		if (startDate && endDate) {
+			const startOfDay = new Date(startDate);
+			startOfDay.setHours(0, 0, 0, 0);
+
+			const endOfDay = new Date(endDate);
+			endOfDay.setHours(23, 59, 59, 999);
+
 			return data.filter((item) => {
 				const itemDate = new Date(item.ISO_DateTime);
 				if (isNaN(itemDate.getTime())) return false;
-
-				// Set end date to end of day to include all entries from that day
-				const endOfDay = new Date(endDate);
-				endOfDay.setHours(23, 59, 59, 999);
-				return itemDate >= startDate && itemDate <= endOfDay;
+				return itemDate >= startOfDay && itemDate <= endOfDay;
 			});
 		} else {
-			// If custom range is selected but no dates are set, return empty array
 			return [];
 		}
 	}
 
 	const { latest } = getDataDateRange(data);
 
-	// Validate that we have a valid latest date
 	if (isNaN(latest.getTime())) {
 		console.error("Invalid latest date found in data");
 		return data;
 	}
 
-	const endDateRange = new Date(latest);
-	endDateRange.setHours(23, 59, 59, 999); // End of the latest day
-
 	let startDateRange: Date;
+	let endDateRange: Date;
 
 	switch (range) {
-		case "lastDay":
-			// Show data from the last day only
+		case "today":
 			startDateRange = new Date(latest);
-			startDateRange.setHours(0, 0, 0, 0); // Start of the same day
+			startDateRange.setHours(0, 0, 0, 0);
+
+			endDateRange = new Date(latest);
+			endDateRange.setHours(23, 59, 59, 999);
 			break;
+
 		case "lastWeek":
-			// Show data from 7 days before the latest date
 			startDateRange = new Date(latest);
 			startDateRange.setDate(latest.getDate() - 6);
 			startDateRange.setHours(0, 0, 0, 0);
+
+			endDateRange = new Date(latest);
+			endDateRange.setHours(23, 59, 59, 999);
 			break;
+
 		case "lastMonth":
-			// Show data from 30 days before the latest date
 			startDateRange = new Date(latest);
 			startDateRange.setDate(latest.getDate() - 29);
 			startDateRange.setHours(0, 0, 0, 0);
+
+			endDateRange = new Date(latest);
+			endDateRange.setHours(23, 59, 59, 999);
 			break;
+
 		default:
 			return data;
-	}
-
-	// Validate the calculated dates before logging
-	if (isNaN(startDateRange.getTime()) || isNaN(endDateRange.getTime())) {
-		console.error("Invalid date range calculated");
-		return data;
 	}
 
 	console.log(

@@ -4,16 +4,10 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+
 import { format, parseISO, isAfter, isBefore, isEqual } from "date-fns";
 import ActivityChart from "./ActivityChart";
+import { useDateStore } from "@/lib/stores/dataStore";
 
 export interface ActivityData {
 	activityName: string;
@@ -28,15 +22,16 @@ export interface ActivityData {
 	ActivityStart: string;
 }
 
-type TimeRange = "lastDay" | "lastWeek" | "lastMonth" | "custom";
-
 const ActivityDashboard = () => {
 	const [activities, setActivities] = useState<ActivityData[]>([]);
 	const [loading, setLoading] = useState(true);
-	const [timeRange, setTimeRange] = useState<TimeRange>("lastWeek");
-	const [customStartDate, setCustomStartDate] = useState<Date>();
-	const [customEndDate, setCustomEndDate] = useState<Date>();
+
 	const [error, setError] = useState<string | null>(null);
+	const {
+		viewMode: timeRange,
+		customStartDate,
+		customEndDate,
+	} = useDateStore();
 
 	useEffect(() => {
 		const loadCSVData = async () => {
@@ -89,7 +84,7 @@ const ActivityDashboard = () => {
 		const times = activities.map((a) => parseISO(a.ISO_DateTime).getTime());
 		const max = new Date(Math.max(...times));
 		let start = new Date(max);
-		if (timeRange === "lastDay") start.setDate(start.getDate() - 1);
+		if (timeRange === "today") start.setDate(start.getDate() - 1);
 		else if (timeRange === "lastWeek") start.setDate(start.getDate() - 7);
 		else if (timeRange === "lastMonth") start.setDate(start.getDate() - 30);
 		else if (timeRange === "custom" && customStartDate)
@@ -109,22 +104,29 @@ const ActivityDashboard = () => {
 
 	const currentDateRange = useMemo(() => {
 		if (!activities.length) return "";
+
 		const maxDate = new Date(
 			Math.max(
 				...activities.map((a) => parseISO(a.ISO_DateTime).getTime())
 			)
 		);
-		const start = new Date(maxDate);
-		if (timeRange === "lastDay") start.setDate(start.getDate() - 1);
-		else if (timeRange === "lastWeek") start.setDate(start.getDate() - 7);
-		else if (timeRange === "lastMonth") start.setDate(start.getDate() - 30);
-		else if (timeRange === "custom" && customStartDate)
+
+		if (timeRange === "custom") {
+			if (!customStartDate || !customEndDate)
+				return "Please select a full custom range";
 			return `${format(customStartDate, "MMM d")} - ${format(
-				customEndDate!,
+				customEndDate,
 				"MMM d, yyyy"
 			)}`;
+		}
+
+		const start = new Date(maxDate);
+		if (timeRange === "today") start.setDate(start.getDate() - 1);
+		else if (timeRange === "lastWeek") start.setDate(start.getDate() - 7);
+		else if (timeRange === "lastMonth") start.setDate(start.getDate() - 30);
+
 		return `${format(start, "MMM d")} - ${format(maxDate, "MMM d, yyyy")}`;
-	}, [timeRange, customStartDate, customEndDate, activities]);
+	}, [activities, timeRange, customStartDate, customEndDate]);
 
 	if (loading)
 		return (
@@ -148,71 +150,8 @@ const ActivityDashboard = () => {
 					</p>
 				</CardHeader>
 				<CardContent>
-					<div className="flex flex-wrap gap-2 mb-4">
-						{(
-							["lastDay", "lastWeek", "lastMonth"] as TimeRange[]
-						).map((r) => (
-							<Button
-								key={r}
-								variant={
-									timeRange === r ? "default" : "outline"
-								}
-								onClick={() => setTimeRange(r)}
-							>
-								{r
-									.replace("last", "Last ")
-									.replace("Day", "Day")
-									.replace("Week", "Week")
-									.replace("Month", "Month")}
-							</Button>
-						))}
-
-						<Popover>
-							<PopoverTrigger asChild>
-								<Button variant="outline">
-									<CalendarIcon className="mr-2 h-4 w-4" />
-									{customStartDate
-										? format(customStartDate, "MMM dd")
-										: "Start Date"}
-								</Button>
-							</PopoverTrigger>
-							<PopoverContent>
-								<Calendar
-									mode="single"
-									selected={customStartDate}
-									onSelect={(date) => {
-										setCustomStartDate(date);
-										if (date && customEndDate)
-											setTimeRange("custom");
-									}}
-								/>
-							</PopoverContent>
-						</Popover>
-
-						<Popover>
-							<PopoverTrigger asChild>
-								<Button variant="outline">
-									<CalendarIcon className="mr-2 h-4 w-4" />
-									{customEndDate
-										? format(customEndDate, "MMM dd")
-										: "End Date"}
-								</Button>
-							</PopoverTrigger>
-							<PopoverContent>
-								<Calendar
-									mode="single"
-									selected={customEndDate}
-									onSelect={(date) => {
-										setCustomEndDate(date);
-										if (date && customStartDate)
-											setTimeRange("custom");
-									}}
-								/>
-							</PopoverContent>
-						</Popover>
-					</div>
-
 					<ActivityChart activities={filteredActivities} />
+					<p className="text-muted-foreground"></p>
 				</CardContent>
 			</Card>
 		</div>

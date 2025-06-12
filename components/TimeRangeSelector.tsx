@@ -2,9 +2,11 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import DateRangeSelector from "./DateRangeSelector";
 
+import type { DateRangeOption } from "../lib/stores/dataStore";
+
 interface TimeRangeSelectorProps {
-	selectedRange: string;
-	onRangeChange: (range: string) => void;
+	selectedRange: DateRangeOption;
+	onRangeChange: (range: DateRangeOption) => void;
 	startDate?: Date;
 	endDate?: Date;
 	onStartDateChange: (date: Date | undefined) => void;
@@ -21,16 +23,17 @@ const TimeRangeSelector: React.FC<TimeRangeSelectorProps> = ({
 	onEndDateChange,
 	dateRangeInfo,
 }) => {
-	const ranges = [
-		{ key: "lastDay", label: "Last Day" },
+	const ranges: { key: DateRangeOption; label: string }[] = [
+		{ key: "today", label: "Last Day" },
 		{ key: "lastWeek", label: "Last Week" },
 		{ key: "lastMonth", label: "Last Month" },
 	];
 
 	return (
 		<div className="mb-6">
-			<div className="flex flex-wrap gap-2 items-center justify-between">
-				<div className="flex gap-2">
+			<div className="flex flex-col gap-3">
+				{/* Time Range Buttons */}
+				<div className="flex flex-wrap gap-2">
 					{ranges.map((range) => (
 						<Button
 							key={range.key}
@@ -51,13 +54,11 @@ const TimeRangeSelector: React.FC<TimeRangeSelectorProps> = ({
 					))}
 					<Button
 						variant={
-							selectedRange === "customRange"
-								? "default"
-								: "outline"
+							selectedRange === "custom" ? "default" : "outline"
 						}
-						onClick={() => onRangeChange("customRange")}
+						onClick={() => onRangeChange("custom")}
 						className={`transition-all duration-200 ${
-							selectedRange === "customRange"
+							selectedRange === "custom"
 								? "bg-blue-500 hover:bg-blue-600 text-white shadow-md"
 								: "hover:bg-gray-50 border-gray-200"
 						}`}
@@ -66,16 +67,20 @@ const TimeRangeSelector: React.FC<TimeRangeSelectorProps> = ({
 					</Button>
 				</div>
 
-				{selectedRange === "customRange" && (
-					<DateRangeSelector
-						startDate={startDate}
-						endDate={endDate}
-						onStartDateChange={onStartDateChange}
-						onEndDateChange={onEndDateChange}
-					/>
+				{/* Custom Date Pickers Below */}
+				{selectedRange === "custom" && (
+					<div className="flex flex-wrap gap-2">
+						<DateRangeSelector
+							startDate={startDate}
+							endDate={endDate}
+							onStartDateChange={onStartDateChange}
+							onEndDateChange={onEndDateChange}
+						/>
+					</div>
 				)}
 			</div>
 
+			{/* Range Info */}
 			{dateRangeInfo && (
 				<p className="text-sm text-white mt-2">{dateRangeInfo}</p>
 			)}

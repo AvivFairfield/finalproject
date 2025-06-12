@@ -8,23 +8,22 @@ import {
 	getDateRangeDescription,
 } from "../lib/csvParser";
 import MoodChart from "./MoodChart";
-import TimeRangeSelector from "./TimeRangeSelector";
 import FeelingSelector from "./FeelingSelector";
 import AverageCards from "./AverageCards";
 import HowToReadDashboard from "./HowToReadDashboard";
+import { useDateStore } from "../lib/stores/dataStore"; // Adjust the path if needed
 
 const MoodDashboard: React.FC = () => {
 	const [data, setData] = useState<MoodData[]>([]);
 	const [filteredData, setFilteredData] = useState<MoodData[]>([]);
-	const [selectedRange, setSelectedRange] = useState("lastWeek");
 	const [selectedFeelings, setSelectedFeelings] = useState<string[]>([
 		"My Mood",
 		"Parkinson's State",
 		"Physical Difficulty",
 	]);
 	const [loading, setLoading] = useState(true);
-	const [startDate, setStartDate] = useState<Date | undefined>();
-	const [endDate, setEndDate] = useState<Date | undefined>();
+
+	const { viewMode, customStartDate, customEndDate } = useDateStore();
 
 	useEffect(() => {
 		const loadData = async () => {
@@ -45,31 +44,24 @@ const MoodDashboard: React.FC = () => {
 
 	useEffect(() => {
 		if (data.length > 0) {
-			if (selectedRange === "customRange" && (!startDate || !endDate)) {
+			if (viewMode === "custom" && (!customStartDate || !customEndDate)) {
 				setFilteredData([]);
 				return;
 			}
 
 			const filtered = filterDataByTimeRange(
 				data,
-				selectedRange,
-				startDate,
-				endDate
+				viewMode,
+				customStartDate,
+				customEndDate
 			);
+
 			const feelingFiltered = filtered.filter((item) =>
 				selectedFeelings.includes(item.type)
 			);
 			setFilteredData(feelingFiltered);
 		}
-	}, [data, selectedRange, selectedFeelings, startDate, endDate]);
-
-	const handleRangeChange = (range: string) => {
-		setSelectedRange(range);
-		if (range !== "customRange") {
-			setStartDate(undefined);
-			setEndDate(undefined);
-		}
-	};
+	}, [data, viewMode, selectedFeelings, customStartDate, customEndDate]);
 
 	const handleFeelingToggle = (feeling: string) => {
 		setSelectedFeelings((prev) => {
@@ -81,10 +73,12 @@ const MoodDashboard: React.FC = () => {
 		});
 	};
 
-	const dateRangeInfo =
-		data.length > 0
-			? getDateRangeDescription(selectedRange, data, startDate, endDate)
-			: "";
+	const dateRangeInfo = getDateRangeDescription(
+		viewMode,
+		filteredData,
+		customStartDate,
+		customEndDate
+	);
 
 	if (loading) {
 		return (
@@ -100,7 +94,7 @@ const MoodDashboard: React.FC = () => {
 	}
 
 	return (
-		<div className="min-h-screen  p-4 md:p-8 text-white">
+		<div className="min-h-screen p-4 md:p-8 text-white">
 			<div className="max-w-7xl mx-auto">
 				<div className="text-center mb-8">
 					<h1 className="text-4xl font-bold mb-2">
@@ -111,26 +105,16 @@ const MoodDashboard: React.FC = () => {
 					</p>
 				</div>
 
-				<div className="bg-muted rounded-2xl p-6 md:p-8 shadow-lg mb-6 ">
+				<div className="bg-muted rounded-2xl p-6 md:p-8 shadow-lg mb-6">
 					<div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
-						{/* Left: Date controls */}
 						<div className="flex-1 min-w-[200px]">
 							<FeelingSelector
 								selectedFeelings={selectedFeelings}
 								onFeelingToggle={handleFeelingToggle}
 							/>
-							<TimeRangeSelector
-								selectedRange={selectedRange}
-								onRangeChange={handleRangeChange}
-								startDate={startDate}
-								endDate={endDate}
-								onStartDateChange={setStartDate}
-								onEndDateChange={setEndDate}
-								dateRangeInfo={dateRangeInfo}
-							/>
+							{dateRangeInfo}
 						</div>
 
-						{/* Right: Compact average cards */}
 						<div className="flex flex-row gap-3 md:gap-4 md:items-start pr-2">
 							<AverageCards
 								data={filteredData}
@@ -140,7 +124,7 @@ const MoodDashboard: React.FC = () => {
 						</div>
 					</div>
 
-					<MoodChart data={filteredData} timeRange={selectedRange} />
+					<MoodChart data={filteredData} timeRange={viewMode} />
 
 					<HowToReadDashboard
 						title="How to Read This Graph"

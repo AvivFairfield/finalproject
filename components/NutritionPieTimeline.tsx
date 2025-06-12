@@ -11,8 +11,8 @@ import {
 	TooltipProps,
 } from "recharts";
 import { format } from "date-fns"; // ✅ Make sure you have this!
-import DateRangeSelector from "@/components/DateRangeSelector"; // adjust the path as needed
 import HowToReadDashboard from "./HowToReadDashboard";
+import { useDateStore } from "@/lib/stores/dataStore";
 
 // ✅ Correct TypeScript interfaces
 interface NutritionEntry {
@@ -32,7 +32,7 @@ interface ExtendedNutrientGroup {
 	dateObj?: Date;
 }
 
-type ViewMode = "day" | "week" | "month" | "custom";
+type ViewMode = "today" | "lastWeek" | "lastMonth" | "custom";
 
 const COLORS: Record<string, string> = {
 	Protein: "#ff6384",
@@ -43,9 +43,12 @@ const COLORS: Record<string, string> = {
 export default function NutritionPieTimeline() {
 	const [data, setData] = useState<ExtendedNutrientGroup[][]>([]);
 	const [labels, setLabels] = useState<string[]>([]);
-	const [viewMode, setViewMode] = useState<ViewMode>("day");
-	const [customStartDate, setCustomStartDate] = useState<Date | undefined>();
-	const [customEndDate, setCustomEndDate] = useState<Date | undefined>();
+	const {
+		viewMode,
+
+		customStartDate,
+		customEndDate,
+	} = useDateStore();
 
 	useEffect(() => {
 		fetch("/nutritions2.csv")
@@ -64,23 +67,26 @@ export default function NutritionPieTimeline() {
 
 						const now = new Date();
 						let startDate: Date;
-						const endDate: Date = now;
+						let endDate: Date = now;
 
-						if (viewMode === "day") {
+						if (viewMode === "today") {
 							startDate = new Date();
 							startDate.setHours(0, 0, 0, 0);
-						} else if (viewMode === "week") {
+							endDate = new Date();
+							endDate.setHours(23, 59, 59, 999);
+						} else if (viewMode === "lastWeek") {
 							startDate = new Date(now);
 							startDate.setDate(now.getDate() - 6);
 							startDate.setHours(0, 0, 0, 0);
-						} else if (viewMode === "month") {
+						} else if (viewMode === "lastMonth") {
 							startDate = new Date(now);
 							startDate.setDate(now.getDate() - 29);
 							startDate.setHours(0, 0, 0, 0);
 						} else if (viewMode === "custom") {
 							if (!customStartDate || !customEndDate) return;
-							startDate = customStartDate;
-							endDate.setTime(customEndDate.getTime());
+							startDate = new Date(customStartDate);
+							endDate = new Date(customEndDate);
+							endDate.setHours(23, 59, 59, 999);
 						}
 
 						const filteredEntries = entries.filter((entry) => {
@@ -112,7 +118,7 @@ export default function NutritionPieTimeline() {
 			const date = entry.dateObj!;
 			let key = "";
 
-			if (mode === "day") key = format(date, "HH:00");
+			if (mode === "today") key = format(date, "HH:00");
 			else key = format(date, "MMM d");
 
 			if (!groupMap[key]) groupMap[key] = [];
@@ -215,14 +221,14 @@ export default function NutritionPieTimeline() {
 	}
 
 	// 👉 For aligning days in weeks (calendar-like grid)
-	const isDayView = viewMode !== "day";
+	const isDayView = viewMode !== "today";
 
 	return (
 		<div className="p-4">
 			<div className="bg-muted rounded-lg p-4 shadow-md">
 				<h2 className="text-lg font-semibold mb-1 text-white">
 					Macronutrient Timeline (
-					{viewMode === "day" ? "by Hour" : "by Date"})
+					{viewMode === "today" ? "by Hour" : "by Date"})
 				</h2>
 
 				{labels.length > 1 && (
@@ -267,38 +273,6 @@ export default function NutritionPieTimeline() {
 						})()}
 					</>
 				)}
-
-				{/* Buttons */}
-				<div className="flex flex-wrap items-center gap-3 mb-4">
-					{(["day", "week", "month", "custom"] as ViewMode[]).map(
-						(mode) => (
-							<button
-								key={mode}
-								className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ease-in-out transform ${
-									viewMode === mode
-										? "bg-indigo-500 text-white shadow-md scale-105"
-										: "bg-muted text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-700 scale-100"
-								}`}
-								onClick={() => setViewMode(mode)}
-							>
-								{mode === "custom"
-									? "Custom"
-									: `Last ${
-											mode.charAt(0).toUpperCase() +
-											mode.slice(1)
-									  }`}
-							</button>
-						)
-					)}
-					{viewMode === "custom" && (
-						<DateRangeSelector
-							startDate={customStartDate}
-							endDate={customEndDate}
-							onStartDateChange={setCustomStartDate}
-							onEndDateChange={setCustomEndDate}
-						/>
-					)}
-				</div>
 
 				{/* Legend */}
 				<div className="flex items-center gap-4 mb-4 text-sm text-gray-300">

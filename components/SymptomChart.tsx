@@ -1,97 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Calendar } from "lucide-react";
 import HowToReadDashboard from "./HowToReadDashboard";
-
-// Simplified DateRangePicker component
-const DateRangePicker = ({ onDateRangeChange, dateRange }) => {
-	const [isOpen, setIsOpen] = useState(false);
-
-	return (
-		<div className="relative">
-			<button
-				onClick={() => setIsOpen(!isOpen)}
-				className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md bg-muted"
-			>
-				<Calendar className="w-4 h-4" />
-				{dateRange.from ? (
-					dateRange.to ? (
-						<>
-							{dateRange.from.toLocaleDateString()} -{" "}
-							{dateRange.to.toLocaleDateString()}
-						</>
-					) : (
-						dateRange.from.toLocaleDateString()
-					)
-				) : (
-					<span>Pick a date range</span>
-				)}
-			</button>
-
-			{isOpen && (
-				<div className="absolute top-full left-0 mt-1 p-4 bg-muted border border-white rounded-md shadow-lg z-10">
-					<div className="space-y-2">
-						<div>
-							<label className="block text-sm font-medium text-white">
-								From:
-							</label>
-							<input
-								type="date"
-								className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
-								onChange={(e) => {
-									const newDate = e.target.value
-										? new Date(e.target.value)
-										: undefined;
-									onDateRangeChange({
-										from: newDate,
-										to: dateRange.to,
-									});
-								}}
-								value={
-									dateRange.from
-										? dateRange.from
-												.toISOString()
-												.split("T")[0]
-										: ""
-								}
-							/>
-						</div>
-						<div>
-							<label className="block text-sm font-medium text-white">
-								To:
-							</label>
-							<input
-								type="date"
-								className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
-								onChange={(e) => {
-									const newDate = e.target.value
-										? new Date(e.target.value)
-										: undefined;
-									onDateRangeChange({
-										from: dateRange.from,
-										to: newDate,
-									});
-								}}
-								value={
-									dateRange.to
-										? dateRange.to
-												.toISOString()
-												.split("T")[0]
-										: ""
-								}
-							/>
-						</div>
-						<button
-							onClick={() => setIsOpen(false)}
-							className="w-full px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-						>
-							Apply
-						</button>
-					</div>
-				</div>
-			)}
-		</div>
-	);
-};
+import { useDateStore } from "@/lib/stores/dataStore";
 
 const symptoms = [
 	{ name: "Dystonia", color: "#EC4899", icon: "🔀" },
@@ -104,15 +13,12 @@ const symptoms = [
 ];
 
 const SymptomChart = () => {
-	const [timeView, setTimeView] = useState("Last Day");
 	const [csvData, setCsvData] = useState([]);
-	const [dateRange, setDateRange] = useState({
-		from: undefined,
-		to: undefined,
-	});
+
 	const [data, setData] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
+	const { viewMode, customStartDate, customEndDate } = useDateStore();
 
 	// Parse CSV data
 	const parseCSV = (csvText) => {
@@ -183,8 +89,7 @@ const SymptomChart = () => {
 		};
 
 		loadData();
-	}, []);
-
+	}, [viewMode, customStartDate, customEndDate]);
 	// Create sample CSV content with multiple entries per day
 	const createSampleCSV = () => {
 		const now = new Date();
@@ -273,18 +178,20 @@ const SymptomChart = () => {
 			.sort((a, b) => b.getTime() - a.getTime());
 		const latestDate = allDates[0];
 
-		if (timeView === "Custom Range" && dateRange.from && dateRange.to) {
+		if (viewMode === "custom" && customStartDate && customEndDate) {
+			const toEndOfDay = new Date(customEndDate);
+			toEndOfDay.setHours(23, 59, 59, 999); // Include the full day
 			filteredData = csvData.filter((item) => {
 				const itemDate = new Date(item.ISOdatetime);
-				return itemDate >= dateRange.from && itemDate <= dateRange.to;
+				return itemDate >= customStartDate && itemDate <= toEndOfDay;
 			});
 		} else {
 			const startDate = new Date(latestDate);
-			if (timeView === "Last Day") {
+			if (viewMode === "today") {
 				startDate.setDate(latestDate.getDate() - 1);
-			} else if (timeView === "Last Week") {
+			} else if (viewMode === "lastWeek") {
 				startDate.setDate(latestDate.getDate() - 7);
-			} else if (timeView === "Last Month") {
+			} else if (viewMode === "lastMonth") {
 				startDate.setMonth(latestDate.getMonth() - 1);
 			}
 
@@ -306,7 +213,7 @@ const SymptomChart = () => {
 		});
 
 		setData(chartData);
-	}, [csvData, timeView, dateRange]);
+	}, [csvData, viewMode]);
 
 	const getTimeLabels = () => {
 		if (csvData.length === 0) return [];
@@ -316,11 +223,11 @@ const SymptomChart = () => {
 			.sort((a, b) => b.getTime() - a.getTime());
 		const latestDate = allDates[0];
 
-		if (timeView === "Custom Range" && dateRange.from && dateRange.to) {
+		if (viewMode === "custom" && customStartDate && customEndDate) {
 			// For custom range, show all timestamps from the data within the range
 			const relevantData = csvData.filter((item) => {
 				const itemDate = new Date(item.ISOdatetime);
-				return itemDate >= dateRange.from && itemDate <= dateRange.to;
+				return itemDate >= customStartDate && itemDate <= customEndDate;
 			});
 
 			// Get unique timestamps and sort them
@@ -346,7 +253,7 @@ const SymptomChart = () => {
 			}));
 		}
 
-		if (timeView === "Last Day") {
+		if (viewMode === "today") {
 			// Show only time for last day view - use actual data timestamps from that day
 			const oneDayAgo = new Date(
 				latestDate.getTime() - 24 * 60 * 60 * 1000
@@ -373,7 +280,7 @@ const SymptomChart = () => {
 				timestamp: date.toISOString(),
 				isMultiDay: false,
 			}));
-		} else if (timeView === "Last Week") {
+		} else if (viewMode === "lastWeek") {
 			// Show date and time for last week
 			const oneWeekAgo = new Date(
 				latestDate.getTime() - 7 * 24 * 60 * 60 * 1000
@@ -461,13 +368,6 @@ const SymptomChart = () => {
 
 	const timeLabels = getTimeLabels();
 
-	const handleDateRangeChange = (range) => {
-		setDateRange(range);
-		if (range.from && range.to) {
-			setTimeView("Custom Range");
-		}
-	};
-
 	// Improved responsive cell width calculation
 	const getCellWidth = () => {
 		const numSlots = timeLabels.length;
@@ -514,27 +414,6 @@ const SymptomChart = () => {
 						<h1 className="text-2xl font-bold text-white">
 							Parkinson's Symptom Tracker
 						</h1>
-						<div className="flex gap-2 items-center">
-							{["Last Day", "Last Week", "Last Month"].map(
-								(view) => (
-									<button
-										key={view}
-										onClick={() => setTimeView(view)}
-										className={`px-4 py-2 rounded-md transition-all duration-200 ${
-											timeView === view
-												? "bg-blue-600 text-white"
-												: "bg-muted text-white hover:bg-blue-900"
-										}`}
-									>
-										{view}
-									</button>
-								)
-							)}
-							<DateRangePicker
-								onDateRangeChange={handleDateRangeChange}
-								dateRange={dateRange}
-							/>
-						</div>
 					</div>
 					<p className="text-white mt-2">
 						Monitor and analyze symptom patterns over time
@@ -551,6 +430,7 @@ const SymptomChart = () => {
 									const endDate = new Date(
 										Math.max(...dates)
 									).toLocaleDateString();
+
 									return `Showing data from ${startDate} to ${endDate} • Total entries: ${data.length}`;
 							  })()
 							: "No data available for selected time period"}
@@ -629,7 +509,7 @@ const SymptomChart = () => {
 								{/* Header row */}
 								<div className="flex bg-gray-50 border-b border-gray-200">
 									<div className="w-48 p-3 font-semibold text-gray-700 text-sm border-r border-gray-200 flex items-center">
-										{timeView === "Last Day"
+										{viewMode === "today"
 											? "Time →"
 											: "Date & Time →"}
 									</div>
@@ -819,4 +699,4 @@ const SymptomChart = () => {
 	);
 };
 
-export default SymptomChart;
+export default React.memo(SymptomChart);

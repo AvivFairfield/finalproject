@@ -1,4 +1,5 @@
 import AccountButton from "@/components/AccountButton";
+import GlobalDateControls from "@/components/GlobalDateControls";
 import SignOutButton from "@/components/SignOutButton";
 import { isAuthenticated } from "@/lib/actions/auth.action";
 import Image from "next/image";
@@ -35,6 +36,10 @@ const RootLayout = async ({ children }: { children: ReactNode }) => {
 			<main className="flex-grow w-full px-4 md:px-8 py-6">
 				{children}
 			</main>
+
+			<div className="fixed bottom-4 right-4 z-50">
+				<GlobalDateControls />
+			</div>
 		</div>
 	);
 };

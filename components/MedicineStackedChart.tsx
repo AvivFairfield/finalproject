@@ -11,8 +11,7 @@ import {
 	ResponsiveContainer,
 } from "recharts";
 import { format } from "date-fns";
-import { Button } from "@/components/ui/button";
-import DateRangeSelector from "@/components/DateRangeSelector";
+import { useDateStore } from "@/lib/stores/dataStore";
 import HowToReadDashboard from "./HowToReadDashboard";
 import CustomTooltip from "./CustomTooltip";
 
@@ -22,13 +21,9 @@ interface MedicineEntry {
 	dateTaken: string;
 }
 
-type View = "today" | "lastWeek" | "lastMonth" | "custom";
-
 const MedicineStackedChart: React.FC = () => {
 	const [data, setData] = useState<MedicineEntry[]>([]);
-	const [view, setView] = useState<View>("lastWeek");
-	const [customStart, setCustomStart] = useState<Date | undefined>();
-	const [customEnd, setCustomEnd] = useState<Date | undefined>();
+	const { viewMode, customStartDate, customEndDate } = useDateStore();
 
 	useEffect(() => {
 		fetch("/fabricated_medicines_mar_jun_utf8bom.csv")
@@ -54,19 +49,37 @@ const MedicineStackedChart: React.FC = () => {
 	}, []);
 
 	const filteredData = useMemo(() => {
-		const now = new Date();
-		const rangeStart = new Date(now);
+		if (!data.length) return [];
 
-		if (view === "today") {
-			rangeStart.setHours(0, 0, 0, 0);
-		} else if (view === "lastWeek") {
-			rangeStart.setDate(now.getDate() - 7);
-		} else if (view === "lastMonth") {
-			rangeStart.setDate(now.getDate() - 30);
-		} else if (view === "custom") {
-			if (!customStart || !customEnd) return [];
-			rangeStart.setTime(customStart.getTime());
-			now.setTime(customEnd.getTime());
+		let start: Date;
+		let end: Date;
+		const maxDate = new Date(
+			Math.max(...data.map((d) => new Date(d.dateTaken).getTime()))
+		);
+
+		if (viewMode === "today") {
+			start = new Date(maxDate);
+			start.setHours(0, 0, 0, 0);
+			end = new Date(maxDate);
+			end.setHours(23, 59, 59, 999);
+		} else if (viewMode === "lastWeek") {
+			start = new Date(maxDate);
+			start.setDate(start.getDate() - 6);
+			start.setHours(0, 0, 0, 0);
+			end = new Date(maxDate);
+			end.setHours(23, 59, 59, 999);
+		} else if (viewMode === "lastMonth") {
+			start = new Date(maxDate);
+			start.setDate(start.getDate() - 29);
+			start.setHours(0, 0, 0, 0);
+			end = new Date(maxDate);
+			end.setHours(23, 59, 59, 999);
+		} else {
+			if (!customStartDate || !customEndDate) return [];
+			start = new Date(customStartDate);
+			start.setHours(0, 0, 0, 0);
+			end = new Date(customEndDate);
+			end.setHours(23, 59, 59, 999);
 		}
 
 		const byDateAndMedicine: Record<string, Record<string, number>> = {};
@@ -75,8 +88,8 @@ const MedicineStackedChart: React.FC = () => {
 			const parsed = new Date(entry.dateTaken);
 			if (isNaN(parsed.getTime())) return;
 
-			if (parsed >= rangeStart && parsed <= now) {
-				const dateKey = format(parsed, "dd/M"); // <-- Changed format here
+			if (parsed >= start && parsed <= end) {
+				const dateKey = format(parsed, "dd/M");
 				if (!byDateAndMedicine[dateKey]) {
 					byDateAndMedicine[dateKey] = {};
 				}
@@ -91,7 +104,7 @@ const MedicineStackedChart: React.FC = () => {
 			date,
 			...meds,
 		}));
-	}, [data, view, customStart, customEnd]);
+	}, [data, viewMode, customStartDate, customEndDate]);
 
 	const allMedicineNames = useMemo(() => {
 		const names = new Set<string>();
@@ -100,31 +113,26 @@ const MedicineStackedChart: React.FC = () => {
 	}, [data]);
 
 	const getDateRangeLabel = () => {
-		const now = new Date();
-		let from: Date = new Date(now);
-		let to: Date = now;
+		if (!data.length) return "No data available";
+		const maxDate = new Date(
+			Math.max(...data.map((d) => new Date(d.dateTaken).getTime()))
+		);
+		const end = new Date(maxDate);
 
-		if (view === "today") {
-			from = new Date(now);
-			from.setHours(0, 0, 0, 0);
-			return `Showing data from ${format(from, "HH:mm")} to ${format(
-				to,
-				"HH:mm"
-			)}`;
-		} else if (view === "lastWeek") {
-			from = new Date(now);
-			from.setDate(now.getDate() - 7);
-		} else if (view === "lastMonth") {
-			from = new Date(now);
-			from.setDate(now.getDate() - 30);
-		} else if (view === "custom") {
-			if (!customStart || !customEnd) return "Please select a date range";
-			from = customStart;
-			to = customEnd;
+		if (viewMode === "custom" && customStartDate && customEndDate) {
+			return `Showing data from ${format(
+				customStartDate,
+				"MMM d"
+			)} to ${format(customEndDate, "MMM d")}`;
 		}
 
-		return `Showing data from ${format(from, "MMM d")} to ${format(
-			to,
+		const start = new Date(end);
+		if (viewMode === "today") start.setHours(0, 0, 0, 0);
+		else if (viewMode === "lastWeek") start.setDate(start.getDate() - 6);
+		else if (viewMode === "lastMonth") start.setDate(start.getDate() - 29);
+
+		return `Showing data from ${format(start, "MMM d")} to ${format(
+			end,
 			"MMM d"
 		)}`;
 	};
@@ -135,42 +143,6 @@ const MedicineStackedChart: React.FC = () => {
 				<h2 className="text-xl font-semibold text-white mb-4">
 					Medicine Intake Summary
 				</h2>
-
-				<div className="flex flex-wrap items-center gap-2 mb-4">
-					<Button
-						variant={view === "today" ? "default" : "outline"}
-						onClick={() => setView("today")}
-					>
-						Today
-					</Button>
-					<Button
-						variant={view === "lastWeek" ? "default" : "outline"}
-						onClick={() => setView("lastWeek")}
-					>
-						Last Week
-					</Button>
-					<Button
-						variant={view === "lastMonth" ? "default" : "outline"}
-						onClick={() => setView("lastMonth")}
-					>
-						Last Month
-					</Button>
-					<Button
-						variant={view === "custom" ? "default" : "outline"}
-						onClick={() => setView("custom")}
-					>
-						Custom Range
-					</Button>
-
-					{view === "custom" && (
-						<DateRangeSelector
-							startDate={customStart}
-							endDate={customEnd}
-							onStartDateChange={setCustomStart}
-							onEndDateChange={setCustomEnd}
-						/>
-					)}
-				</div>
 
 				<div className="text-sm text-muted-foreground font-medium mb-4">
 					{getDateRangeLabel()}
@@ -201,7 +173,7 @@ const MedicineStackedChart: React.FC = () => {
 						"Each colored segment within a bar corresponds to a specific medication and dose.",
 						"The legend below the chart shows which color represents each medication.",
 						"Hover over a bar to view details including medication names, dosages, and intake date.",
-						"Use the buttons at the top to switch between Today, Last Week, Last Month, or a custom date range.",
+						"Use the global date picker to switch between timeframes.",
 						"This graph helps track medication adherence and compare daily intake patterns over time.",
 					]}
 				/>
