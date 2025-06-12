@@ -89,7 +89,7 @@ const SymptomChart = () => {
 		};
 
 		loadData();
-	}, [viewMode, customStartDate, customEndDate]);
+	}, []);
 	// Create sample CSV content with multiple entries per day
 	const createSampleCSV = () => {
 		const now = new Date();
@@ -213,7 +213,7 @@ const SymptomChart = () => {
 		});
 
 		setData(chartData);
-	}, [csvData, viewMode]);
+	}, [csvData, viewMode, customStartDate, customEndDate]);
 
 	const getTimeLabels = () => {
 		if (csvData.length === 0) return [];
