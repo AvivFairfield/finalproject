@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { format } from "date-fns"; // ✅ Make sure you have this!
 import DateRangeSelector from "@/components/DateRangeSelector"; // adjust the path as needed
+import HowToReadDashboard from "./HowToReadDashboard";
 
 // ✅ Correct TypeScript interfaces
 interface NutritionEntry {
@@ -355,6 +356,23 @@ export default function NutritionPieTimeline() {
 					</div>
 				))}
 			</div>
+			<HowToReadDashboard
+				title="How to Read This Graph"
+				bullets={[
+					"Each pie chart represents one day's nutritional breakdown.",
+					"The chart is divided into three segments for Protein, Fat, and Carbohydrates (Carbs).",
+					"The size of each segment shows the proportion of that nutrient in the daily total.",
+					"Hover over a chart to see exact grams of each nutrient and the list of foods consumed.",
+					"Use the buttons above to switch between Last Day, Last Week, Last Month, or a custom date range.",
+					"The summary line at the top displays the total protein, fat, and carbs for the selected time period.",
+					"This graph helps you track your dietary balance and spot nutrition trends over time.",
+				]}
+				legend={[
+					{ label: "Protein", color: "#ff6384", opacity: 1 },
+					{ label: "Fat", color: "#36a2eb", opacity: 1 },
+					{ label: "Carbs", color: "#ffcd56", opacity: 1 },
+				]}
+			/>
 		</div>
 	);
 }

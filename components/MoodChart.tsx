@@ -52,7 +52,7 @@ const CustomTooltip: React.FC<TooltipProps<number, string>> = ({
 							</p>
 							{originalEntry?.notes && (
 								<p className="text-sm text-gray-600 italic">
-									"{originalEntry.notes}"
+									&quot;{originalEntry.notes}&quot;
 								</p>
 							)}
 						</div>

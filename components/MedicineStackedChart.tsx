@@ -13,6 +13,7 @@ import {
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import DateRangeSelector from "@/components/DateRangeSelector";
+import HowToReadDashboard from "./HowToReadDashboard";
 
 interface MedicineEntry {
 	name: string;
@@ -188,6 +189,18 @@ const MedicineStackedChart: React.FC = () => {
 						))}
 					</BarChart>
 				</ResponsiveContainer>
+				<HowToReadDashboard
+					title="How to Read This Graph"
+					bullets={[
+						"Each bar represents one day, showing all medications taken on that date.",
+						"The height of the bar indicates the total number of doses taken that day.",
+						"Each colored segment within a bar corresponds to a specific medication and dose.",
+						"The legend below the chart shows which color represents each medication.",
+						"Hover over a bar to view details including medication names, dosages, and intake date.",
+						"Use the buttons at the top to switch between Today, Last Week, Last Month, or a custom date range.",
+						"This graph helps track medication adherence and compare daily intake patterns over time.",
+					]}
+				/>
 			</div>
 		</div>
 	);

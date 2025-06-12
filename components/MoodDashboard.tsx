@@ -11,6 +11,7 @@ import MoodChart from "./MoodChart";
 import TimeRangeSelector from "./TimeRangeSelector";
 import FeelingSelector from "./FeelingSelector";
 import AverageCards from "./AverageCards";
+import HowToReadDashboard from "./HowToReadDashboard";
 
 const MoodDashboard: React.FC = () => {
 	const [data, setData] = useState<MoodData[]>([]);
@@ -131,6 +132,34 @@ const MoodDashboard: React.FC = () => {
 					<AverageCards
 						data={filteredData}
 						selectedFeelings={selectedFeelings}
+					/>
+					<HowToReadDashboard
+						title="How to Read This Graph"
+						bullets={[
+							"The horizontal axis shows the date of each entry.",
+							"The vertical axis represents severity on a scale from 1 (low) to 5 (high).",
+							"Each colored line represents a different feeling:",
+							"Dots on the lines indicate daily values for each feeling.",
+							"Hover over a point to view the exact severity score and any personal note.",
+							"Use the buttons above to filter by feeling type or time range.",
+							"Interpretation tip: For My Mood, a higher score is better (more positive mood).",
+							"For Parkinson’s State and Physical Difficulty, higher scores indicate greater difficulty or symptom severity.",
+							"Colored boxes below show the average severity for each selected feeling.",
+							"This graph helps recognize emotional and physical trends to support more informed care.",
+						]}
+						legend={[
+							{ label: "My Mood", color: "#3B82F6", opacity: 1 },
+							{
+								label: "Parkinson’s State",
+								color: "#EF4444",
+								opacity: 1,
+							},
+							{
+								label: "Physical Difficulty",
+								color: "#10B981",
+								opacity: 1,
+							},
+						]}
 					/>
 				</div>
 			</div>

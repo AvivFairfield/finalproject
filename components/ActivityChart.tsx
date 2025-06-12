@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { format, parseISO } from "date-fns";
 import { ActivityData } from "./ActivityDashboard";
+import HowToReadDashboard from "./HowToReadDashboard";
 
 interface ActivityChartProps {
 	activities: ActivityData[];
@@ -429,59 +430,23 @@ Intensity: ${activity.intensity}${
 				</div>
 			</div>
 
-			<div className="mt-6 bg-muted border border-white rounded-lg p-4">
-				<div className="flex items-start gap-3">
-					<div className="text-blue-600 text-lg">💡</div>
-					<div className="text-sm text-white">
-						<p className="font-medium mb-2">
-							How to Read This Dashboard
-						</p>
-						<div className="space-y-1">
-							<p>
-								• <strong>Horizontal position</strong> indicates
-								the time of day the activity occurred.
-							</p>
-							<p>
-								• <strong>Length of the rectangle</strong>{" "}
-								reflects the duration of the activity in
-								minutes.
-							</p>
-							<p>
-								• <strong>Color transparency</strong> shows the
-								intensity of the activity:
-							</p>
-							<div className="ml-4 mt-1 space-y-1">
-								<div className="flex items-center gap-2">
-									<div
-										className="w-4 h-3 bg-blue-600"
-										style={{ opacity: 1 }}
-									/>
-									<span>High = bold</span>
-								</div>
-								<div className="flex items-center gap-2">
-									<div
-										className="w-4 h-3 bg-blue-600"
-										style={{ opacity: 0.6 }}
-									/>
-									<span>Moderate = semi-transparent</span>
-								</div>
-								<div className="flex items-center gap-2">
-									<div
-										className="w-4 h-3 bg-blue-600"
-										style={{ opacity: 0.3 }}
-									/>
-									<span>Low = light</span>
-								</div>
-							</div>
-							<p className="mt-2">
-								• <strong>Tip:</strong> Hover over any rectangle
-								to view a tooltip with the exact activity name
-								and its duration.
-							</p>
-						</div>
-					</div>
-				</div>
-			</div>
+			<HowToReadDashboard
+				bullets={[
+					"Horizontal position indicates the time of day the activity occurred.",
+					"Length of the rectangle reflects the duration of the activity in minutes.",
+					"Color transparency shows the intensity of the activity:",
+					"Tip: Hover over any rectangle to view a tooltip with the exact activity name and its duration.",
+				]}
+				legend={[
+					{ label: "High = bold", color: "#3B82F6", opacity: 1 },
+					{
+						label: "Moderate = semi-transparent",
+						color: "#3B82F6",
+						opacity: 0.6,
+					},
+					{ label: "Low = light", color: "#3B82F6", opacity: 0.3 },
+				]}
+			/>
 		</div>
 	);
 };
