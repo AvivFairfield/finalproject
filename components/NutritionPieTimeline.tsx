@@ -320,59 +320,66 @@ export default function NutritionPieTimeline() {
 			</div>
 
 			{/* Grid */}
-			<div
-				className={
-					isDayView
-						? "grid grid-cols-7 gap-4 px-2 pb-6"
-						: "flex overflow-x-auto overflow-y-hidden gap-4 px-2 pb-6 scroll-smooth snap-x snap-mandatory max-h-[240px]"
-				}
-			>
-				{data.map((nutrients, idx) => (
-					<div
-						key={idx}
-						className="w-[140px] flex-shrink-0 snap-center rounded-xl bg-muted p-4 shadow-md relative"
-					>
-						<p className="text-center text-sm font-semibold mb-2">
-							{labels[idx]}
-						</p>
-						<ResponsiveContainer width={100} height={100}>
-							<PieChart>
-								<Pie
-									data={nutrients}
-									dataKey="value"
-									nameKey="name"
-									outerRadius={45}
-								>
-									{nutrients.map((slice, i) => (
-										<Cell
-											key={i}
-											fill={COLORS[slice.name]}
-										/>
-									))}
-								</Pie>
-								<Tooltip content={<CustomTooltip />} />
-							</PieChart>
-						</ResponsiveContainer>
-					</div>
-				))}
+			<div className="bg-muted rounded-lg p-4 shadow-md">
+				<h2 className="text-xl font-semibold text-white mb-4">
+					Macronutrient Timeline (
+					{viewMode === "day" ? "by Hour" : "by Date"})
+				</h2>
+
+				<div
+					className={
+						isDayView
+							? "grid grid-cols-7 gap-4"
+							: "flex overflow-x-auto overflow-y-hidden gap-4 scroll-smooth snap-x snap-mandatory max-h-[240px]"
+					}
+				>
+					{data.map((nutrients, idx) => (
+						<div
+							key={idx}
+							className="w-[140px] flex-shrink-0 snap-center rounded-xl bg-[#1f1f1f] p-4 shadow-[0_4px_12px_rgba(0,0,0,0.4)] ring-1 ring-black/30 transition-all duration-300 hover:shadow-[0_6px_16px_rgba(0,0,0,0.5)]"
+						>
+							<p className="text-center text-sm font-semibold mb-2">
+								{labels[idx]}
+							</p>
+							<ResponsiveContainer width={100} height={100}>
+								<PieChart>
+									<Pie
+										data={nutrients}
+										dataKey="value"
+										nameKey="name"
+										outerRadius={45}
+									>
+										{nutrients.map((slice, i) => (
+											<Cell
+												key={i}
+												fill={COLORS[slice.name]}
+											/>
+										))}
+									</Pie>
+									<Tooltip content={<CustomTooltip />} />
+								</PieChart>
+							</ResponsiveContainer>
+						</div>
+					))}
+				</div>
+				<HowToReadDashboard
+					title="How to Read This Graph"
+					bullets={[
+						"Each pie chart represents one day's nutritional breakdown.",
+						"The chart is divided into three segments for Protein, Fat, and Carbohydrates (Carbs).",
+						"The size of each segment shows the proportion of that nutrient in the daily total.",
+						"Hover over a chart to see exact grams of each nutrient and the list of foods consumed.",
+						"Use the buttons above to switch between Last Day, Last Week, Last Month, or a custom date range.",
+						"The summary line at the top displays the total protein, fat, and carbs for the selected time period.",
+						"This graph helps you track your dietary balance and spot nutrition trends over time.",
+					]}
+					legend={[
+						{ label: "Protein", color: "#ff6384", opacity: 1 },
+						{ label: "Fat", color: "#36a2eb", opacity: 1 },
+						{ label: "Carbs", color: "#ffcd56", opacity: 1 },
+					]}
+				/>
 			</div>
-			<HowToReadDashboard
-				title="How to Read This Graph"
-				bullets={[
-					"Each pie chart represents one day's nutritional breakdown.",
-					"The chart is divided into three segments for Protein, Fat, and Carbohydrates (Carbs).",
-					"The size of each segment shows the proportion of that nutrient in the daily total.",
-					"Hover over a chart to see exact grams of each nutrient and the list of foods consumed.",
-					"Use the buttons above to switch between Last Day, Last Week, Last Month, or a custom date range.",
-					"The summary line at the top displays the total protein, fat, and carbs for the selected time period.",
-					"This graph helps you track your dietary balance and spot nutrition trends over time.",
-				]}
-				legend={[
-					{ label: "Protein", color: "#ff6384", opacity: 1 },
-					{ label: "Fat", color: "#36a2eb", opacity: 1 },
-					{ label: "Carbs", color: "#ffcd56", opacity: 1 },
-				]}
-			/>
 		</div>
 	);
 }
