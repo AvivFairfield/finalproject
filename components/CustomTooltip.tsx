@@ -11,13 +11,24 @@ const CustomTooltip: React.FC<TooltipProps<ValueType, NameType>> = ({
 }) => {
 	if (active && payload && payload.length) {
 		return (
-			<div className="bg-[#1f1f1f] text-white p-3 rounded-md shadow-lg text-sm border border-gray-700">
-				<p className="font-semibold mb-2">{label}</p>
+			<div
+				// Force override with inline styles
+				style={{
+					backgroundColor: "#1f1f1f",
+					color: "white",
+					padding: "12px",
+					borderRadius: "0.375rem",
+					boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+					border: "1px solid #4b5563", // Tailwind's gray-700
+				}}
+			>
+				<p style={{ fontWeight: "600", marginBottom: "8px" }}>
+					{label}
+				</p>
 				{payload.map((entry, index) => (
 					<p
 						key={index}
-						style={{ color: entry.color }}
-						className="font-medium"
+						style={{ color: entry.color, fontWeight: "500" }}
 					>
 						{entry.name}: {entry.value}
 					</p>

@@ -84,7 +84,7 @@ const ActivityDashboard = () => {
 		const times = activities.map((a) => parseISO(a.ISO_DateTime).getTime());
 		const max = new Date(Math.max(...times));
 		let start = new Date(max);
-		if (timeRange === "today") start.setDate(start.getDate() - 1);
+		if (timeRange === "today") start.setHours(0, 0, 0, 0);
 		else if (timeRange === "lastWeek") start.setDate(start.getDate() - 7);
 		else if (timeRange === "lastMonth") start.setDate(start.getDate() - 30);
 		else if (timeRange === "custom" && customStartDate)
@@ -92,7 +92,8 @@ const ActivityDashboard = () => {
 		const end =
 			timeRange === "custom" && customEndDate
 				? new Date(customEndDate.setHours(23, 59, 59, 999))
-				: max;
+				: new Date(max.setHours(23, 59, 59, 999));
+
 		return activities.filter((a) => {
 			const dt = parseISO(a.ISO_DateTime);
 			return (
@@ -121,7 +122,7 @@ const ActivityDashboard = () => {
 		}
 
 		const start = new Date(maxDate);
-		if (timeRange === "today") start.setDate(start.getDate() - 1);
+		if (timeRange === "today") start.setHours(0, 0, 0, 0);
 		else if (timeRange === "lastWeek") start.setDate(start.getDate() - 7);
 		else if (timeRange === "lastMonth") start.setDate(start.getDate() - 30);
 

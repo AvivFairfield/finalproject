@@ -65,23 +65,25 @@ export default function NutritionPieTimeline() {
 								dateObj: new Date(e.dateTaken.split(" GMT")[0]),
 							}));
 
-						const now = new Date();
-						let startDate: Date;
-						let endDate: Date = now;
+						const latestDateObj = new Date(
+							Math.max(
+								...entries.map((e) => e.dateObj!.getTime())
+							)
+						);
+						let startDate: Date = new Date(latestDateObj);
+						let endDate: Date = new Date(latestDateObj);
 
 						if (viewMode === "today") {
-							startDate = new Date();
 							startDate.setHours(0, 0, 0, 0);
-							endDate = new Date();
 							endDate.setHours(23, 59, 59, 999);
 						} else if (viewMode === "lastWeek") {
-							startDate = new Date(now);
-							startDate.setDate(now.getDate() - 6);
+							startDate.setDate(startDate.getDate() - 6);
 							startDate.setHours(0, 0, 0, 0);
+							endDate.setHours(23, 59, 59, 999);
 						} else if (viewMode === "lastMonth") {
-							startDate = new Date(now);
-							startDate.setDate(now.getDate() - 29);
+							startDate.setDate(startDate.getDate() - 29);
 							startDate.setHours(0, 0, 0, 0);
+							endDate.setHours(23, 59, 59, 999);
 						} else if (viewMode === "custom") {
 							if (!customStartDate || !customEndDate) return;
 							startDate = new Date(customStartDate);

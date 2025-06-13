@@ -14,17 +14,15 @@ const symptoms = [
 
 const SymptomChart = () => {
 	const [csvData, setCsvData] = useState([]);
-
+	const [latestCSVDate, setLatestCSVDate] = useState(null);
 	const [data, setData] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const { viewMode, customStartDate, customEndDate } = useDateStore();
 
-	// Parse CSV data
 	const parseCSV = (csvText) => {
 		const lines = csvText.trim().split("\n");
 		const headers = lines[0].split(",").map((h) => h.trim());
-
 		return lines.slice(1).map((line) => {
 			const values = line.split(",").map((v) => v.trim());
 			const row = {};
@@ -35,26 +33,21 @@ const SymptomChart = () => {
 		});
 	};
 
-	// Load CSV data
 	useEffect(() => {
 		const loadData = async () => {
 			try {
 				setLoading(true);
-				// Try to read the CSV file
 				let csvText;
 				try {
-					const response = await fetch("/symptoms-data.csv");
+					const response = await fetch("/symptoms_final.csv");
 					if (!response.ok) throw new Error("CSV file not found");
 					csvText = await response.text();
-				} catch (fetchError) {
-					// If file doesn't exist, create sample data
+				} catch {
 					console.warn("CSV file not found, using sample data");
 					csvText = createSampleCSV();
 				}
 
 				const parsedData = parseCSV(csvText);
-
-				// Validate and clean the data
 				const cleanedData = parsedData
 					.filter(
 						(row) =>
@@ -76,13 +69,30 @@ const SymptomChart = () => {
 					);
 
 				setCsvData(cleanedData);
+				setLatestCSVDate(
+					new Date(
+						Math.max(
+							...cleanedData.map((item) =>
+								new Date(item.ISOdatetime).getTime()
+							)
+						)
+					)
+				);
 				setError(null);
 			} catch (err) {
 				console.error("Failed to load CSV data:", err);
 				setError(err.message);
-				// Use sample data as fallback
 				const sampleData = createSampleData();
 				setCsvData(sampleData);
+				setLatestCSVDate(
+					new Date(
+						Math.max(
+							...sampleData.map((item) =>
+								new Date(item.ISOdatetime).getTime()
+							)
+						)
+					)
+				);
 			} finally {
 				setLoading(false);
 			}
@@ -90,118 +100,33 @@ const SymptomChart = () => {
 
 		loadData();
 	}, []);
-	// Create sample CSV content with multiple entries per day
-	const createSampleCSV = () => {
-		const now = new Date();
-		const lines = [
-			"type,symptomName,severity,notes,dateOnly,timeOnly,ISOdatetime",
-		];
 
-		// Generate sample data for the last 30 days with multiple entries per day
-		for (let i = 0; i < 30; i++) {
-			const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-
-			// Add 3-7 random symptoms for each day at different times
-			const numEntries = Math.floor(Math.random() * 5) + 3;
-			for (let j = 0; j < numEntries; j++) {
-				const symptom =
-					symptoms[Math.floor(Math.random() * symptoms.length)];
-				const severity = Math.floor(Math.random() * 5) + 1;
-				const randomHour = Math.floor(Math.random() * 24);
-				const randomMinute = Math.floor(Math.random() * 60);
-				const entryDate = new Date(
-					date.getFullYear(),
-					date.getMonth(),
-					date.getDate(),
-					randomHour,
-					randomMinute
-				);
-
-				lines.push(
-					`${
-						symptom.name
-					},,${severity},,${entryDate.toLocaleDateString()},${entryDate.toLocaleTimeString()},${entryDate.toISOString()}`
-				);
-			}
-		}
-
-		return lines.join("\n");
-	};
-
-	// Create sample data directly with multiple entries per day
-	const createSampleData = () => {
-		const latestDate = new Date("2025-06-28");
-		const data = [];
-
-		for (let i = 0; i < 30; i++) {
-			const date = new Date(
-				latestDate.getTime() - i * 24 * 60 * 60 * 1000
-			);
-
-			// Multiple entries per day
-			const numEntries = Math.floor(Math.random() * 5) + 3;
-			for (let j = 0; j < numEntries; j++) {
-				const symptom =
-					symptoms[Math.floor(Math.random() * symptoms.length)];
-				const severity = Math.floor(Math.random() * 5) + 1;
-				const randomHour = Math.floor(Math.random() * 24);
-				const randomMinute = Math.floor(Math.random() * 60);
-				const entryDate = new Date(
-					date.getFullYear(),
-					date.getMonth(),
-					date.getDate(),
-					randomHour,
-					randomMinute
-				);
-
-				data.push({
-					ISOdatetime: entryDate.toISOString(),
-					symptomName: symptom.name,
-					severity: severity,
-					type: symptom.name,
-				});
-			}
-		}
-
-		return data;
-	};
-
-	// Process data based on time view and date range
 	useEffect(() => {
-		if (csvData.length === 0) return;
-
+		if (csvData.length === 0 || !latestCSVDate) return;
 		let filteredData = [];
 
-		// Get the latest date from the data as reference point
-		const allDates = csvData
-			.map((item) => new Date(item.ISOdatetime))
-			.sort((a, b) => b.getTime() - a.getTime());
-		const latestDate = allDates[0];
+		const endDate = new Date(latestCSVDate);
+		endDate.setHours(23, 59, 59, 999);
+		let startDate = new Date(latestCSVDate);
 
-		if (viewMode === "custom" && customStartDate && customEndDate) {
-			const toEndOfDay = new Date(customEndDate);
-			toEndOfDay.setHours(23, 59, 59, 999); // Include the full day
-			filteredData = csvData.filter((item) => {
-				const itemDate = new Date(item.ISOdatetime);
-				return itemDate >= customStartDate && itemDate <= toEndOfDay;
-			});
-		} else {
-			const startDate = new Date(latestDate);
-			if (viewMode === "today") {
-				startDate.setDate(latestDate.getDate() - 1);
-			} else if (viewMode === "lastWeek") {
-				startDate.setDate(latestDate.getDate() - 7);
-			} else if (viewMode === "lastMonth") {
-				startDate.setMonth(latestDate.getMonth() - 1);
-			}
-
-			filteredData = csvData.filter((item) => {
-				const itemDate = new Date(item.ISOdatetime);
-				return itemDate >= startDate && itemDate <= latestDate;
-			});
+		if (viewMode === "today") {
+			startDate.setHours(0, 0, 0, 0);
+		} else if (viewMode === "lastWeek") {
+			startDate.setDate(startDate.getDate() - 6);
+			startDate.setHours(0, 0, 0, 0);
+		} else if (viewMode === "lastMonth") {
+			startDate.setDate(startDate.getDate() - 29);
+			startDate.setHours(0, 0, 0, 0);
+		} else if (viewMode === "custom" && customStartDate && customEndDate) {
+			startDate = new Date(customStartDate);
+			endDate.setTime(new Date(customEndDate).setHours(23, 59, 59, 999));
 		}
 
-		// Convert to chart format
+		filteredData = csvData.filter((item) => {
+			const itemDate = new Date(item.ISOdatetime);
+			return itemDate >= startDate && itemDate <= endDate;
+		});
+
 		const chartData = filteredData.map((item) => {
 			const symptom = symptoms.find((s) => s.name === item.symptomName);
 			return {
@@ -213,7 +138,7 @@ const SymptomChart = () => {
 		});
 
 		setData(chartData);
-	}, [csvData, viewMode, customStartDate, customEndDate]);
+	}, [csvData, viewMode, customStartDate, customEndDate, latestCSVDate]);
 
 	const getTimeLabels = () => {
 		if (csvData.length === 0) return [];
