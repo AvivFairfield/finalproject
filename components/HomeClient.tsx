@@ -13,7 +13,7 @@ export default function HomeClient({ user }: { user: User }) {
 	const [selectedPatientEmail, setSelectedPatientEmail] =
 		useState<string>("");
 	const [selectedPatientName, setSelectedPatientName] = useState<string>("");
-	console.log(selectedPatientName);
+	const hasSelectedPatient = Boolean(selectedPatientEmail);
 
 	return (
 		<section className="card-cta w-full px-4">
@@ -22,15 +22,20 @@ export default function HomeClient({ user }: { user: User }) {
 					Welcome, {user?.name || "Guest"}
 				</h2>
 
-				<div className="flex flex-col gap-2">
-					<PatientSelect
-						providerEmail={user.email}
-						value={selectedPatientEmail}
-						onChange={(email, name) => {
-							setSelectedPatientEmail(email);
-							setSelectedPatientName(name);
-						}}
-					/>
+				<div className="relative">
+					{!hasSelectedPatient && (
+						<span className="absolute -inset-1 animate-ping rounded-full bg-blue-500/30 pointer-events-none z-0" />
+					)}
+					<div className="relative z-10 flex flex-col gap-2">
+						<PatientSelect
+							providerEmail={user.email}
+							value={selectedPatientEmail}
+							onChange={(email, name) => {
+								setSelectedPatientEmail(email);
+								setSelectedPatientName(name);
+							}}
+						/>
+					</div>
 				</div>
 			</div>
 		</section>
