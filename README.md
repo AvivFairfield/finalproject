@@ -6,7 +6,8 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - Rotem Sher
  ## Getting Started
 First, run the development server:
-
+npm install 
+and then:
 ```bash
 npm run dev
 # or
