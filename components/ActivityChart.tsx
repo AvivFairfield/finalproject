@@ -169,11 +169,12 @@ const ActivityChart: React.FC<ActivityChartProps> = ({ activities }) => {
 
 	return (
 		<div className="w-full">
-			<div className="mb-6 flex flex-wrap items-center gap-6">
+			<div className="mb-6">
 				<div className="text-sm font-semibold text-foreground mb-2">
 					Activity Summary – Grouped by Category
 				</div>
-				<div className="flex flex-wrap gap-4">
+
+				<div className="flex flex-wrap gap-4 mb-4">
 					{categories.map((category) => (
 						<div key={category} className="flex items-center gap-2">
 							<div
@@ -187,6 +188,32 @@ const ActivityChart: React.FC<ActivityChartProps> = ({ activities }) => {
 							</span>
 						</div>
 					))}
+				</div>
+
+				<div>
+					<div className="text-sm font-semibold text-foreground mb-2">
+						Intensity Legend (Transparency)
+					</div>
+					<div className="flex gap-4">
+						{[
+							{ label: "High", opacity: 1 },
+							{ label: "Moderate", opacity: 0.6 },
+							{ label: "Low", opacity: 0.3 },
+						].map((item) => (
+							<div
+								key={item.label}
+								className="flex items-center gap-2"
+							>
+								<div
+									className="w-4 h-4 rounded bg-gray-500"
+									style={{ opacity: item.opacity }}
+								/>
+								<span className="text-sm text-muted-foreground">
+									{item.label}
+								</span>
+							</div>
+						))}
+					</div>
 				</div>
 			</div>
 

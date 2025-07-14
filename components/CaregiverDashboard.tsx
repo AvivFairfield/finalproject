@@ -25,6 +25,7 @@ type User = {
 export default function HomeClient({ user }: { user: User }) {
 	const [selectedPatientEmail, setSelectedPatientEmail] =
 		useState<string>("");
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [selectedPatientName, setSelectedPatientName] = useState<string>("");
 	const hasSelectedPatient = Boolean(selectedPatientEmail);
 	const [activeTab, setActiveTab] = useState<string>(user.profession);
