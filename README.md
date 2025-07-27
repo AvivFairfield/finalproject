@@ -4,6 +4,8 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 # Contributors
 - Aviv Cohen 
 - Rotem Sher
+#Here is a link to a video demonstrating the ParkinsonSphere application:
+https://drive.google.com/file/d/1QLMWunhYhJkPRZXt8PRs0xX6jEzJATCU/view?usp=sharing
  ## Getting Started
 First, run the development server:
 npm install 
